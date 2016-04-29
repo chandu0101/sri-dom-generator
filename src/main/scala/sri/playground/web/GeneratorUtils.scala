@@ -7,7 +7,7 @@ import scala.scalajs.js
 import scala.scalajs.js.Dynamic.{literal => json}
 
 
-object DOMUtils {
+object GeneratorUtils {
 
 
   def getEventAttributes(tag: String) = {

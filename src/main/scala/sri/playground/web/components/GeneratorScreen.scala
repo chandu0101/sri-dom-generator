@@ -1,10 +1,7 @@
 package sri.playground.web.components
 
-import org.scalajs.dom
-import org.scalajs.dom.ext.PimpedNodeList
-import org.scalajs.dom.raw.DOMParser
 import sri.core.{ReactComponent, ReactElement}
-import sri.playground.web.{DOMUtils, Dom}
+import sri.playground.web.{GeneratorUtils, Dom}
 import sri.web.all._
 import sri.web.extra.components.materialui._
 import sri.web.styles.WebStyleSheet
@@ -33,8 +30,7 @@ object GeneratorScreen {
     }
 
     def onButtonTap(e: ReactTouchEventH) = {
-//     val out = DOMUtils.generateHtmlTags()
-     val out = DOMUtils.generateTestsForHtmltags()
+     val out = GeneratorUtils.generateHtmlTags()
       setState(state.copy(outputText = out))
     }
 
