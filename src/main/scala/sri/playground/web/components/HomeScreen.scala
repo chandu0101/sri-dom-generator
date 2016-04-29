@@ -4,8 +4,7 @@ import org.scalajs.dom
 import org.scalajs.dom.ext.PimpedNodeList
 import org.scalajs.dom.raw.DOMParser
 import sri.core.{ReactComponent, ReactElement}
-import sri.playground.web.Dom
-import sri.playground.web.vdom.VDOM2
+import sri.playground.web.vdom.HtmlTags._
 import sri.web.all._
 import sri.web.extra.components.materialui._
 import sri.web.styles.WebStyleSheet
@@ -33,10 +32,7 @@ object HomeScreen {
         TextArea(
           value = state.outputText,
           style = styles.input)(),
-        VDOM2.div(id = "man")("Hello babes"),
-        VDOM2.span(id = "man",tabIndex = 1)("Hello babes"),
-        VDOM2.span(id = "man",tabIndex = 1)(null),
-        VDOM2.input(id = "man",tabIndex = 1)
+         table()(caption()("caption"),colgroup()(col()),thead()(tr()(th()("th"))),tbody()(tr()(td()("td"))),tfoot()("foot"))
       )
     }
 

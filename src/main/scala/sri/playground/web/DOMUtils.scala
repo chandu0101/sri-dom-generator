@@ -18,7 +18,6 @@ object DOMUtils {
   }
 
   def getScalaName(name : String) = {
-    val scalaPredefineds = Set("type","var","object")
     if(scalaPredefineds.contains(name)) s"`$name`" else name
   }
 
@@ -31,10 +30,18 @@ object DOMUtils {
   }
 
   def getChildrenText(tag : String) = {
-    val voidTags = Set("input","img")
-    if(voidTags.contains(tag)) "" else s"(children: ReactNode*)"
+    if(htmlVoidTags.contains(tag)) "" else s"(children: ReactNode*)"
   }
-  def getHtmlTagMethod(tag: String) = {
+
+  def addJsObjects(in : js.Object,extra : js.Object) = {
+     val extraDict = extra.asInstanceOf[js.Dictionary[js.Any]]
+     for(key <- extraDict.keys) {
+       val v = extraDict(key)
+       if(!js.isUndefined(v)) in.asInstanceOf[js.Dynamic].updateDynamic(key)(v)
+     }
+  }
+
+  def getHtmlTagMethod(tag: String,inline: Boolean) = {
 
     val htmlAttrs  = getHtmlAttributes(tag)
 
@@ -43,20 +50,51 @@ object DOMUtils {
     val childrenText = getChildrenText(tag)
 
     s"""
+       | ${if(inline) "@inline" else ""}
        | def ${getScalaName(tag)}(
        |  ${htmlAttrs._1},
-       |  ${eventAttrs._1})${childrenText}  = {
+       |  ${eventAttrs._1},
+       |  extraAttributes: U[js.Object] = undefined)${childrenText}  = {
        |    val props = json()
        |    ${htmlAttrs._2.++(eventAttrs._2).map(s => s"""${getScalaName(s)}.foreach(v => props.updateDynamic("$s")(v))""").mkString("\n")}
+       |    if(extraAttributes.isDefined && extraAttributes != null) addJsObjects(props,extraAttributes.get)
        |    React.createElement("$tag",props${if (childrenText.isEmpty) "" else ",children :_*"})
        | }
      """.stripMargin
   }
 
-  def generateHtmlTags() = {
+  def generateHtmlTags(inline : Boolean = false) = {
     s"""
-       | ${htmlElements.map(getHtmlTagMethod).mkString("\n \n")}
+       | trait HtmlTags {
+       |
+       |   ${htmlElements.map(getHtmlTagMethod(_,inline)).mkString("\n \n")}
+       |
+       | }
+       |
      """.stripMargin
   }
+
+
+  def generateTestsForHtmltags() = {
+
+    def getRenderText(tag : String) = {
+      val stag = getScalaName(tag)
+      if(htmlVoidTags.contains(tag)) s"""render($stag(id = "sri-web"))""" else s"""render($stag(id = "sri-web")("child"))"""
+    }
+
+    def getAssert(tag : String) = if(htmlVoidTags.contains(tag)) s"""<$tag data-reactroot=\\"\\" id=\\"sri-web\\">""" else s"""<$tag data-reactroot=\\"\\" id=\\"sri-web\\">child</$tag>"""
+
+    println(s"elements length : ${htmlElements.size}")
+    val tests =  htmlElements.map(tag => {
+       s"""
+          |  test(\"${tag}\") {
+          |    ${getRenderText(tag)}
+          |    assert(rootNode.innerHTML == "${getAssert(tag)}")
+          |  }
+        """.stripMargin
+    })
+    tests.mkString("\n")
+  }
+
 
 }

@@ -238,8 +238,23 @@ object RawData {
     "onWaiting")
 
 
-  //  val supportedHtmlAttributesToElementsMap = htmlAttributesToElementsMap.filter { case (k,v) => htmlAttributes.map().contains(k.toLowerCase)}
+  val htmlVoidTags = Set("area",
+    "base",
+    "br",
+    "col",
+    "embed",
+    "hr",
+    "img",
+    "input",
+    "keygen",
+    "link",
+    "meta",
+    "param",
+    "source",
+    "track",
+    "menuitem",
+    "wbr")
 
-  //  val globalAttributes = htmlAttributesToElementsMap.map { case (k, v) => (k, v.head == GLOBAL_ATTRIBUTE)}.filter { case (k, v) => v}.keys.toSet.filter(a => htmlAt)
+  val scalaPredefineds = Set("type","var","object")
 
 }

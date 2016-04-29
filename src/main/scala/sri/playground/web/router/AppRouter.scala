@@ -13,7 +13,7 @@ object AppRouter {
 
   object config extends WebRouterConfig {
 
-    override val history: History = HistoryFactory.browserHistory()
+    override val history: History = HistoryFactory.browserHistory(new HistoryOptions(basename = "sri-dom-gen"))
 
     override val initialRoute: (WebStaticPage, WebRoute) = defineInitialRoute(HomePage, (route: WebRoute) => HomeScreen())
     staticRoute(GeneratorPage, "gen", (route: WebRoute) => GeneratorScreen())

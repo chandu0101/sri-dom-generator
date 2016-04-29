@@ -33,7 +33,8 @@ object GeneratorScreen {
     }
 
     def onButtonTap(e: ReactTouchEventH) = {
-     val out = DOMUtils.generateHtmlTags()
+//     val out = DOMUtils.generateHtmlTags()
+     val out = DOMUtils.generateTestsForHtmltags()
       setState(state.copy(outputText = out))
     }
 
