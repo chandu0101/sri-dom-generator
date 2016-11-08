@@ -5,7 +5,7 @@ import sri.playground.web.router.AppRouter.{GeneratorPage, HomePage}
 import sri.universal.components._
 import sri.web
 import sri.web.all._
-import sri.web.extra.components.materialui.MuiFlatButton
+import sri.extra.web.components.materialui.components._
 import sri.web.router.WebRouterComponent
 import sri.web.styles.WebStyleSheet
 import scala.scalajs.js
@@ -19,8 +19,8 @@ object TopNav {
   class Component extends WebRouterComponent[Unit, Unit] {
     def render() = {
       View(style = styles.container)(
-       MuiFlatButton(label = "Home",onTouchTap = (e:ReactTouchEventH) => navigateTo(HomePage))(),
-       MuiFlatButton(label = "Generator",onTouchTap = (e:ReactTouchEventH) => navigateTo(GeneratorPage))()
+        MuiFlatButton(label = "Home", onTouchTap = (e: ReactTouchEventH) => navigateTo(HomePage))(),
+        MuiFlatButton(label = "Generator", onTouchTap = (e: ReactTouchEventH) => navigateTo(GeneratorPage))()
       )
     }
 
@@ -33,9 +33,8 @@ object TopNav {
       height := 70)
   }
 
-  val ctor = getTypedConstructor(js.constructorOf[Component], classOf[Component])
-  ctor.contextTypes = web.router.routerContextTypes
+  js.constructorOf[Component].contextTypes = web.router.routerContextTypes
 
-  def apply(key: js.UndefOr[String] = js.undefined, ref: js.Function1[Component, _] = null) = createElementNoProps(ctor, key = key, ref = ref)
+  def apply(key: js.UndefOr[String] = js.undefined, ref: js.Function1[Component, Unit] = null) = makeElementNoProps[Component](key = key, ref = ref)
 
 }

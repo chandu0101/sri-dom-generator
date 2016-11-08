@@ -58,22 +58,68 @@ object GeneratorUtils {
        |    val props = json()
        |    ${htmlAttrs._2.++(eventAttrs._2).map(s => s"""${getScalaName(s)}.foreach(v => props.updateDynamic("$s")(v))""").mkString("\n")}
        |    if(extraAttributes.isDefined && extraAttributes != null) addJsObjects(props,extraAttributes.get)
-       |    React.createElement("$tag",props${if (childrenText.isEmpty) "" else ",children :_*"})
+       |    if (developmentMode) React.createElement("$tag",props${if (childrenText.isEmpty) "" else ",children :_*"})
+       |    else inlineReactElement("$tag",props${if (childrenText.isEmpty) "" else ",children :_*"})
        | }
+     """.stripMargin
+  }
+
+  def getHtmlTagMethodWithMacro(tag: String,inline: Boolean) = {
+
+    val htmlAttrs  = getHtmlAttributes(tag)
+
+    val eventAttrs = getEventAttributes(tag)
+
+    val childrenText = getChildrenText(tag)
+
+    s"""
+       | ${if(inline) "@inline" else ""}
+        | def ${getScalaName(tag)}(
+        |  ${htmlAttrs._1},
+        |  ${eventAttrs._1},
+        |  @exclude extraAttributes: U[js.Object] = undefined)${childrenText} : ReactElement  = {
+        |      val props = FunctionMacro()
+        |    if(extraAttributes.isDefined && extraAttributes != null) addJsObjects(props,extraAttributes.get)
+        |    if (developmentMode) React.createElement("$tag",props${if (childrenText.isEmpty) "" else ",children :_*"})
+        |    else inlineReactElement("$tag",props${if (childrenText.isEmpty) "" else ",children :_*"})
+        | }
      """.stripMargin
   }
 
   def generateHtmlTags(inline : Boolean = false) = {
     s"""
-       | trait HtmlTags {
        |
-       |   ${htmlElements.map(getHtmlTagMethod(_,inline)).mkString("\n \n")}
+       |  @js.native
+       |  sealed trait InputValue extends js.Any
+       |
+       |  object InputValue {
+       |   implicit def strToIV(str : String) = str.asInstanceOf[js.UndefOr[InputValue]]
+       |
+       |   implicit def intToIV(in : Int) = in.asInstanceOf[js.UndefOr[InputValue]]
+       |
+       |   implicit def doubleToIV(in : Double) = in.asInstanceOf[js.UndefOr[InputValue]]
+       |
+       |  }
+       |
+       | trait HtmlTags${if(inline) "Inline" else ""} {
+       |
+       |   ${htmlElements.map(getHtmlTagMethod(_,inline)).mkString("")}
        |
        | }
        |
      """.stripMargin
   }
 
+  def generateHtmlTagsWithMacro(inline : Boolean = false) = {
+    s"""
+        | trait HtmlTags${if(inline) "Inline" else ""} {
+        |
+        |   ${htmlElements.map(getHtmlTagMethodWithMacro(_,inline)).mkString("")}
+        |
+        | }
+        |
+     """.stripMargin
+  }
 
   def generateTestsForHtmltags() = {
 

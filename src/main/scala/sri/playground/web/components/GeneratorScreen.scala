@@ -3,7 +3,8 @@ package sri.playground.web.components
 import sri.core.{ReactComponent, ReactElement}
 import sri.playground.web.{GeneratorUtils, Dom}
 import sri.web.all._
-import sri.web.extra.components.materialui._
+import sri.web.vdom.htmltags._
+import sri.extra.web.components.materialui.components._
 import sri.web.styles.WebStyleSheet
 
 import scala.scalajs.js
@@ -11,7 +12,7 @@ import scala.scalajs.js.annotation.ScalaJSDefined
 
 object GeneratorScreen {
 
-  case class State(theme: MuiRawTheme = Mui.Styles.LightRawTheme, tabValue: String = "light", inputText: String = "", outputText: String = "")
+  case class State(inputText: String = "", outputText: String = "",inline : Boolean = true)
 
   @ScalaJSDefined
   class Component extends ReactComponent[Unit, State] {
@@ -21,27 +22,24 @@ object GeneratorScreen {
 
     def render() = {
       View(style = styles.container)(
+        MuiCheckbox(checked = state.inline,label = "Inline",onCheck = onInlineCheck _),
         MuiRaisedButton(label = "Generate", onTouchTap = onButtonTap _)(),
         TextArea(
           value = state.outputText,
-          style = styles.input)(),
-        Dom.div2(id = "man")
+          style = styles.input)()
       )
     }
 
+    def onInlineCheck(e : ReactEventH,value : Boolean) = {
+      setState(state.copy(inline = value))
+    }
+
     def onButtonTap(e: ReactTouchEventH) = {
-     val out = GeneratorUtils.generateHtmlTags()
+     val out = GeneratorUtils.generateHtmlTags(state.inline)
+//     val out = GeneratorUtils.generateHtmlTagsWithMacro(false)
       setState(state.copy(outputText = out))
     }
 
-    def onTextChange(e: ReactEventI) = {
-      setState(state.copy(inputText = e.target.value))
-    }
-
-    def handleTabChange(value: String, event: ReactEventH, tab: ReactElement) = {
-      val theme = if (value == "dark") Mui.Styles.DarkRawTheme else Mui.Styles.LightRawTheme
-      setState(state.copy(theme = theme, tabValue = value))
-    }
 
   }
 
@@ -74,8 +72,5 @@ object GeneratorScreen {
 
   }
 
-  val ctor = getTypedConstructor(js.constructorOf[Component], classOf[Component])
-
-
-  def apply(key: js.UndefOr[String] = js.undefined, ref: js.Function1[Component, _] = null) = createElementNoProps(ctor, key = key, ref = ref)
+  def apply(key: js.UndefOr[String] = js.undefined, ref: js.Function1[Component, Unit] = null) = makeElementNoProps[Component](key = key, ref = ref)
 }

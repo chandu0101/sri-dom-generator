@@ -1,5 +1,9 @@
 package sri.playground.web
 
+import org.scalajs.dom
+
+import scala.scalajs.js
+
 object RawData {
 
 
@@ -16,6 +20,8 @@ object RawData {
        |select small source span strong style sub summary sup table tbody td textarea
        |tfoot th thead time title tr track u ul var video wbr
      """.stripMargin.replaceAll("\\n", " ").split(" ").map(_.trim).filter(_.nonEmpty).toSet
+
+  val x = dom.html
 
   val htmlAttributes =
     s"""
@@ -41,6 +47,9 @@ object RawData {
   val INT = "Int"
   val DOUBLE = "Double"
   val JSANY = "js.Any"
+  val STRING_OR_INT = "String | Int"
+  val INPUT_VALUE = "InputValue"
+  val REF_FUNCTION = "(_ <: dom.html.Element) => _"
 
   val htmlAttributesMeta: Map[String, AttributeMeta] = Map(
     "accept" -> AttributeMeta(Set("input")),
@@ -88,9 +97,9 @@ object RawData {
     "formTarget" -> AttributeMeta(Set("button", "input")),
     "frameBorder" -> AttributeMeta(Set("frame")),
     "headers" -> AttributeMeta(Set("td", "th")),
-    "height" -> AttributeMeta(Set("iframe", "object", "embed", "video", "img", "canvas", "input")),
+    "height" -> AttributeMeta(Set("iframe", "object", "embed", "video", "img", "canvas", "input"), INT),
     "hidden" -> AttributeMeta(Set(GLOBAL_ELEMENT_ATTRIBUTE), BOOLEAN),
-    "high" -> AttributeMeta(Set("meter")),
+    "high" -> AttributeMeta(Set("meter"), DOUBLE),
     "href" -> AttributeMeta(Set("a", "area", "link", "base")),
     "hrefLang" -> AttributeMeta(Set("a", "area", "link")),
     "htmlFor" -> AttributeMeta(Set("label", "input")),
@@ -100,6 +109,7 @@ object RawData {
     "inputMode" -> AttributeMeta(Set("input")),
     "integrity" -> AttributeMeta(Set("link", "script")),
     "is" -> AttributeMeta(Set(GLOBAL_ELEMENT_ATTRIBUTE)),
+    "key" -> AttributeMeta(Set(GLOBAL_ELEMENT_ATTRIBUTE), STRING_OR_INT),
     "keyParams" -> AttributeMeta(Set("keygen")),
     "keyType" -> AttributeMeta(Set("keygen")),
     "kind" -> AttributeMeta(Set("track")),
@@ -107,16 +117,16 @@ object RawData {
     "lang" -> AttributeMeta(Set(GLOBAL_ELEMENT_ATTRIBUTE)),
     "list" -> AttributeMeta(Set("input")),
     "loop" -> AttributeMeta(Set("audio", "video"), BOOLEAN),
-    "low" -> AttributeMeta(Set("meter")),
+    "low" -> AttributeMeta(Set("meter"), DOUBLE),
     "manifest" -> AttributeMeta(Set("html")),
     "marginHeight" -> AttributeMeta(Set("frame")),
     "marginWidth" -> AttributeMeta(Set("frame")),
-    "max" -> AttributeMeta(Set("input", "meter", "progress")),
+    "max" -> AttributeMeta(Set("input", "meter", "progress"), DOUBLE),
     "maxLength" -> AttributeMeta(Set("input", "textarea"), INT),
     "media" -> AttributeMeta(Set("link", "source", "style")),
     "mediaGroup" -> AttributeMeta(Set("audio", "video")),
     "method" -> AttributeMeta(Set("form")),
-    "min" -> AttributeMeta(Set("input", "meter")),
+    "min" -> AttributeMeta(Set("input", "meter"), DOUBLE),
     "minLength" -> AttributeMeta(Set("input", "textarea"), INT),
     "multiple" -> AttributeMeta(Set("input", "select"), BOOLEAN),
     "muted" -> AttributeMeta(Set("audio", "video"), BOOLEAN),
@@ -132,6 +142,7 @@ object RawData {
     "profile" -> AttributeMeta(Set("head")),
     "radioGroup" -> AttributeMeta(Set("command")),
     "readOnly" -> AttributeMeta(Set("input", "textarea"), BOOLEAN),
+    "ref" -> AttributeMeta(Set(GLOBAL_ELEMENT_ATTRIBUTE), REF_FUNCTION),
     "rel" -> AttributeMeta(Set("a", "area", "link")),
     "required" -> AttributeMeta(Set("input", "select", "textarea"), BOOLEAN),
     "reversed" -> AttributeMeta(Set("ol"), BOOLEAN),
@@ -162,7 +173,7 @@ object RawData {
     "title" -> AttributeMeta(Set(GLOBAL_ELEMENT_ATTRIBUTE)),
     "type" -> AttributeMeta(Set("a", "area", "link", "button", "object", "embed", "source", "style", "script", "input", "ol")),
     "useMap" -> AttributeMeta(Set("img", "object")),
-    "value" -> AttributeMeta(Set("button", "option", "data", "input", "li", "meter", "progress", "param"), JSANY),
+    "value" -> AttributeMeta(Set("button", "option", "data", "input", "li", "meter", "progress", "param", "select"), INPUT_VALUE),
     "width" -> AttributeMeta(Set("iframe", "object", "embed", "video", "img", "canvas", "input"), INT),
     "wrap" -> AttributeMeta(Set("textarea"))
   )
@@ -255,6 +266,6 @@ object RawData {
     "menuitem",
     "wbr")
 
-  val scalaPredefineds = Set("type","var","object")
+  val scalaPredefineds = Set("type", "var", "object")
 
 }
