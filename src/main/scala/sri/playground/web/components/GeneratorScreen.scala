@@ -1,7 +1,7 @@
 package sri.playground.web.components
 
 import sri.core.{ReactComponent, ReactElement}
-import sri.playground.web.{GeneratorUtils, Dom}
+import sri.playground.web.{Dom, GeneratorUtils, HTMLRawData, SVGRawData}
 import sri.web.all._
 import sri.web.vdom.htmltags._
 import sri.extra.web.components.materialui.components._
@@ -12,7 +12,7 @@ import scala.scalajs.js.annotation.ScalaJSDefined
 
 object GeneratorScreen {
 
-  case class State(inputText: String = "", outputText: String = "",inline : Boolean = true)
+  case class State(inputText: String = "", outputText: String = "", inline: Boolean = true, html: Boolean = true)
 
   @ScalaJSDefined
   class Component extends ReactComponent[Unit, State] {
@@ -22,7 +22,8 @@ object GeneratorScreen {
 
     def render() = {
       View(style = styles.container)(
-        MuiCheckbox(checked = state.inline,label = "Inline",onCheck = onInlineCheck _),
+        MuiCheckbox(checked = state.inline, label = "Inline", onCheck = onInlineCheck _),
+        MuiCheckbox(checked = state.html, label = "Html(If unchecked svg data will be generated)", onCheck = onHtmlCheck _),
         MuiRaisedButton(label = "Generate", onTouchTap = onButtonTap _)(),
         TextArea(
           value = state.outputText,
@@ -30,13 +31,18 @@ object GeneratorScreen {
       )
     }
 
-    def onInlineCheck(e : ReactEventH,value : Boolean) = {
+    def onInlineCheck(e: ReactEventH, value: Boolean) = {
       setState(state.copy(inline = value))
     }
 
+    def onHtmlCheck(e: ReactEventH, value: Boolean) = {
+      setState(state.copy(html = value))
+    }
+
     def onButtonTap(e: ReactTouchEventH) = {
-     val out = GeneratorUtils.generateHtmlTags(state.inline)
-//     val out = GeneratorUtils.generateHtmlTagsWithMacro(false)
+      GeneratorUtils.data = if (state.html) HTMLRawData else SVGRawData
+      val out = GeneratorUtils.generateHtmlTags(state.inline)
+      //     val out = GeneratorUtils.generateHtmlTagsWithMacro(false)
       setState(state.copy(outputText = out))
     }
 

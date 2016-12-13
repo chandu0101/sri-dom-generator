@@ -3,19 +3,23 @@ package sri.playground.web.components
 import org.scalajs.dom
 import org.scalajs.dom.ext.PimpedNodeList
 import org.scalajs.dom.raw.DOMParser
-import sri.core.{React, ReactNode, ReactComponent, ReactElement}
+import sri.core.{React, ReactComponent, ReactElement, ReactNode}
 import sri.web.all._
+
 import scala.reflect.ClassTag
 import scala.scalajs.js.`|`
-
 import sri.extra.web.components.materialui._
 import sri.web.styles.WebStyleSheet
 import sri.extra.web.components.materialui.components._
+import sri.playground.web.{GeneratorUtils, SVGRawData}
+
 import scala.scalajs.js
 import scala.scalajs.js.annotation.ScalaJSDefined
 import sri.scalacss.Defaults._
+
 import scalacss.Defaults._
 import sri.web.vdom.htmltags._
+
 import scala.scalajs.js.Dynamic.{literal => json}
 
 object HomeScreen {
@@ -63,6 +67,26 @@ object HomeScreen {
     //      setState(state.copy(outputText = out))
     //    }
 
+    def generateTests(e:ReactEventH) = {
+      GeneratorUtils.data = SVGRawData
+      val out = GeneratorUtils.generateTestsForHtmltags()
+      setState(state.copy(outputText = out))
+    }
+
+    def generateSVGAttributeMeta(e: ReactEventH) = {
+
+      val out =
+        s"""
+           | val svgAttributesMeta: Map[String, AttributeMeta] = Map(
+           |
+           | ${SVGRawData.attributes.toList.sorted.map(a => s""""$a" -> AttributeMeta(Set(GLOBAL_ELEMENT_ATTRIBUTE)),""").mkString("\n")}
+           |
+           | )
+         """.stripMargin
+
+      setState(state.copy(outputText = out))
+    }
+
     def getDefault(tpe: String) = tpe match {
       case "Boolean" => "true"
       case "Double" => "1.0"
@@ -71,70 +95,17 @@ object HomeScreen {
     }
 
     /**
-     * Generate mxGraph Tests
-     * @param e
+     *
+      *
+      * @param e
      */
     def onButtonTap(e: ReactTouchEventH) = {
 
       val input = state.inputText
-      var vars = Set[String]()
-      var thisDefs: Map[String, String] = Map()
-      var defs: Map[String, String] = Map()
-      input.split("\n").filter(_.contains("js.native")).foreach(l => {
-        if (l.contains("var") && !l.contains("js.ThisFunction")) {
-          val noVar = l.replace("var", "").trim
-          val name = noVar.substring(0, noVar.indexOf(":"))
-          vars += name
-        }
-        //         else if(l.contains("js.ThisFunction")) {
-        //           val withVar = l.substring(l.indexOf("var"))
-        //           val noVar = withVar.replace("var","").trim
-        //           val name = noVar.substring(0,noVar.indexOf(":"))
-        //           if(l.contains("js.ThisFunction0")) {
-        //             thisDefs += name.replace("This","") -> s"${name}(instance)"
-        //           } else {
-        //             thisDefs += name -> s"$name(instance,${defs.get(name).getOrElse("")}})"
-        //           }
-        //         }
-        else if (l.contains("def ")) {
-          val noDef = l.replace("def", "").trim
-          val name = noDef.substring(0, noDef.indexOf("("))
-          var params = ""
-          if (!l.contains("()")) {
-            val types = noDef.substring(noDef.indexOf("("), noDef.indexOf(")")).split(",").toList.map(s => {
-              val t = s.split(":").last.trim
-              if(t.contains("=")) t.substring(0,t.indexOf("=")).trim else t
-            })
-             params = types.map(getDefault).mkString(",")
-          }
-          defs += name -> params.trim
-        }
-      })
 
-      def getVaruableTest(name: String) = {
-        s"""
-           | test("${name}_MustBeDefined") {
-                            |   assert(isDefined(instance.$name))
-                                                                 | }
-         """.stripMargin
-      }
+//      input.split("\n").fi
 
-      def methodTest(p: (String, String)) = {
-        val name = p._1
-        val params = p._2
-        s"""
-           | test("ShouldCall_JS_${name}") {
-                                          |  assert(isLegalCall(instance.${name}($params),"${name}"))
-                                                                                                    |   assert(isLegalCall(instance.${name}${if (params.isEmpty) "This" else ""}(instance${if (params.isEmpty) "" else s",$params"}),"${name}"))
-                                                                                                                                                                                                                                               | }
-         """.stripMargin
-      }
-
-      val out =
-        s"""
-           |${vars.map(getVaruableTest).mkString("\n")}
-            |${defs.map(methodTest).mkString("\n")}
-         """.stripMargin
+      val out = input.replaceAll("(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)","").split(",").map(_.trim).take(3).mkString("#")
 
       setState(state.copy(outputText = out))
 

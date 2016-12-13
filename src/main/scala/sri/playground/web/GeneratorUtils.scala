@@ -1,36 +1,35 @@
 package sri.playground.web
 
-import sri.playground.web.RawData._
-import sri.web.SyntheticEvent
-import sri.web.all._
 import scala.scalajs.js
 import scala.scalajs.js.Dynamic.{literal => json}
 
 
 object GeneratorUtils {
 
+  var data : BaseRawData = null
+
 
   def getEventAttributes(tag: String) = {
-    val events: Set[String] = if (tag == "img") globalEvents.++(imageEvents)
-    else if ("auido,video,embed".contains(tag)) globalEvents.++(mediaEvents)
-    else globalEvents
+    val events: Set[String] = if (tag == "img") data.globalEvents.++(data.imageEvents)
+    else if ("auido,video,embed".contains(tag)) data.globalEvents.++(data.mediaEvents)
+    else data.globalEvents
     (events.map(e => s"$e: U[(_ <: SyntheticEvent[_]) => _] = undefined").mkString(",\n"),events)
   }
 
   def getScalaName(name : String) = {
-    if(scalaPredefineds.contains(name)) s"`$name`" else name
+    if(data.scalaPredefineds.contains(name)) s"`$name`" else name
   }
 
   def getHtmlAttributes(tag: String) = {
     val x = json()
     val y : js.UndefOr[Int] = js.undefined
     y.foreach(v => x.updateDynamic("y")(v))
-    val attrs = htmlAttributesMeta.filter { case (k, v) => v.tags.head == GLOBAL_ELEMENT_ATTRIBUTE || v.tags.contains(tag)}
+    val attrs = data.attributesMeta.filter { case (k, v) => v.tags.head == data.GLOBAL_ELEMENT_ATTRIBUTE || v.tags.contains(tag)}
     (attrs.map { case (k, v) => s"${getScalaName(k)}: U[${v.tpe}] = undefined"}.mkString(",\n"),attrs.keys.toSet)
   }
 
   def getChildrenText(tag : String) = {
-    if(htmlVoidTags.contains(tag)) "" else s"(children: ReactNode*)"
+    if(data.voidTags.contains(tag)) "" else s"(children: ReactNode*)"
   }
 
   def addJsObjects(in : js.Object,extra : js.Object) = {
@@ -51,7 +50,7 @@ object GeneratorUtils {
 
     s"""
        | ${if(inline) "@inline" else ""}
-       | def ${getScalaName(tag)}(
+       | def ${getElementMethodName(tag)}(
        |  ${htmlAttrs._1},
        |  ${eventAttrs._1},
        |  extraAttributes: U[js.Object] = undefined)${childrenText}  = {
@@ -62,6 +61,15 @@ object GeneratorUtils {
        |    else inlineReactElement("$tag",props${if (childrenText.isEmpty) "" else ",children :_*"})
        | }
      """.stripMargin
+  }
+
+  /**
+    *  some elements defined both in html and svg , so we suffixing svg method names to avoid conflicts when htmltags and svgtags imported
+    * @param tag
+    */
+  def getElementMethodName(tag:String) = {
+    if(data.isSvg && tag == "a") "aSvg"
+    else getScalaName(tag)
   }
 
   def getHtmlTagMethodWithMacro(tag: String,inline: Boolean) = {
@@ -101,9 +109,9 @@ object GeneratorUtils {
        |
        |  }
        |
-       | trait HtmlTags${if(inline) "Inline" else ""} {
+       | trait ${if(data.isHtml) "Html" else "Svg"}Tags${if(inline) "Inline" else ""} {
        |
-       |   ${htmlElements.map(getHtmlTagMethod(_,inline)).mkString("")}
+       |   ${data.elements.map(getHtmlTagMethod(_,inline)).mkString("")}
        |
        | }
        |
@@ -112,9 +120,9 @@ object GeneratorUtils {
 
   def generateHtmlTagsWithMacro(inline : Boolean = false) = {
     s"""
-        | trait HtmlTags${if(inline) "Inline" else ""} {
+        | trait ${if(data.isHtml) "Html" else "Svg"}Tags${if(inline) "Inline" else ""} {
         |
-        |   ${htmlElements.map(getHtmlTagMethodWithMacro(_,inline)).mkString("")}
+        |   ${data.elements.map(getHtmlTagMethodWithMacro(_,inline)).mkString("")}
         |
         | }
         |
@@ -124,18 +132,18 @@ object GeneratorUtils {
   def generateTestsForHtmltags() = {
 
     def getRenderText(tag : String) = {
-      val stag = getScalaName(tag)
-      if(htmlVoidTags.contains(tag)) s"""render($stag(id = "sri-web"))""" else s"""render($stag(id = "sri-web")("child"))"""
+      val stag = getElementMethodName(tag)
+      if(data.voidTags.contains(tag)) s"""render($stag(id = "sri-web"))""" else s"""render($stag(id = "sri-web")("child"))"""
     }
 
-    def getAssert(tag : String) = if(htmlVoidTags.contains(tag)) s"""<$tag data-reactroot=\\"\\" id=\\"sri-web\\">""" else s"""<$tag data-reactroot=\\"\\" id=\\"sri-web\\">child</$tag>"""
+    def getAssert(tag : String) = if(data.voidTags.contains(tag)) s"""<$tag data-reactroot=\\"\\" id=\\"sri-web\\">""" else s"""<$tag data-reactroot=\\"\\" id=\\"sri-web\\">child</$tag>"""
 
-    println(s"elements length : ${htmlElements.size}")
-    val tests =  htmlElements.map(tag => {
+    println(s"data.elements length : ${data.elements.size}")
+    val tests =  data.elements.map(tag => {
        s"""
           |  test(\"${tag}\") {
           |    ${getRenderText(tag)}
-          |    assert(rootNode.innerHTML == "${getAssert(tag)}")
+          |    assert(rootNode.innerHTML == "${getAssert(tag.toLowerCase())}")
           |  }
         """.stripMargin
     })

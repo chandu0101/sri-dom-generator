@@ -1,15 +1,10 @@
 package sri.playground.web
 
-import org.scalajs.dom
-
-import scala.scalajs.js
-
-object RawData {
+object HTMLRawData extends  BaseRawData{
 
 
-  val GLOBAL_ELEMENT_ATTRIBUTE: String = "HTML elements"
 
-  val htmlElements =
+  val elements =
     s"""
        |a abbr address area article aside audio b base bdi bdo big blockquote body br
        |button canvas caption cite code col colgroup data datalist dd del details dfn
@@ -21,9 +16,8 @@ object RawData {
        |tfoot th thead time title tr track u ul var video wbr
      """.stripMargin.replaceAll("\\n", " ").split(" ").map(_.trim).filter(_.nonEmpty).toSet
 
-  val x = dom.html
 
-  val htmlAttributes =
+  val attributes =
     s"""
        |accept acceptCharset accessKey action allowFullScreen allowTransparency alt
        |async autoComplete autoFocus autoPlay capture cellPadding cellSpacing challenge
@@ -40,18 +34,11 @@ object RawData {
        |style summary tabIndex target title type useMap value width wrap
      """.stripMargin.replaceAll("\\n", " ").split(" ").map(_.trim).filter(_.nonEmpty).toSet
 
-  case class AttributeMeta(tags: Set[String], tpe: String = "String")
 
-
-  val BOOLEAN = "Boolean"
-  val INT = "Int"
-  val DOUBLE = "Double"
-  val JSANY = "js.Any"
-  val STRING_OR_INT = "String | Int"
-  val INPUT_VALUE = "InputValue"
-  val REF_FUNCTION = "(_ <: dom.html.Element) => _"
-
-  val htmlAttributesMeta: Map[String, AttributeMeta] = Map(
+  /**
+    * https://www.w3.org/TR/html5/index.html#attributes-1
+    */
+  val attributesMeta: Map[String, AttributeMeta] = Map(
     "accept" -> AttributeMeta(Set("input")),
     "acceptCharset" -> AttributeMeta(Set("form")),
     "accessKey" -> AttributeMeta(Set(GLOBAL_ELEMENT_ATTRIBUTE)),
@@ -142,7 +129,7 @@ object RawData {
     "profile" -> AttributeMeta(Set("head")),
     "radioGroup" -> AttributeMeta(Set("command")),
     "readOnly" -> AttributeMeta(Set("input", "textarea"), BOOLEAN),
-    "ref" -> AttributeMeta(Set(GLOBAL_ELEMENT_ATTRIBUTE), REF_FUNCTION),
+    "ref" -> AttributeMeta(Set(GLOBAL_ELEMENT_ATTRIBUTE), REF_FUNCTION_HTML),
     "rel" -> AttributeMeta(Set("a", "area", "link")),
     "required" -> AttributeMeta(Set("input", "select", "textarea"), BOOLEAN),
     "reversed" -> AttributeMeta(Set("ol"), BOOLEAN),
@@ -178,78 +165,8 @@ object RawData {
     "wrap" -> AttributeMeta(Set("textarea"))
   )
 
-  val globalEvents = Set("onCopy",
-    "onCut",
-    "onPaste",
-    "onCompositionEnd",
-    "onCompositionStart",
-    "onCompositionUpdate",
-    "onKeyDown",
-    "onKeyPress",
-    "onKeyUp",
-    "onFocus",
-    "onBlur",
-    "onChange",
-    "onInput",
-    "onSubmit",
-    "onClick",
-    "onContextMenu",
-    "onDoubleClick",
-    "onDrag",
-    "onDragEnd",
-    "onDragEnter",
-    "onDragExit",
-    "onDragLeave",
-    "onDragOver",
-    "onDragStart",
-    "onDrop",
-    "onMouseDown",
-    "onMouseEnter",
-    "onMouseLeave",
-    "onMouseMove",
-    "onMouseUp",
-    "onSelect",
-    "onTouchCancel",
-    "onTouchEnd",
-    "onTouchMove",
-    "onTouchStart",
-    "onScroll",
-    "onWheel",
-    "onAnimationStart",
-    "onAnimationEnd",
-    "onAnimationIteration",
-    "onTransitionEnd"
-  )
 
-  val imageEvents = Set("onLoad",
-    "onError")
-
-  val mediaEvents = Set("onAbort",
-    "onCanPlay",
-    "onCanPlayThrough",
-    "onDurationChange",
-    "onEmptied",
-    "onEncrypted",
-    "onEnded",
-    "onError",
-    "onLoadedData",
-    "onLoadedMetadata",
-    "onLoadStart",
-    "onPause",
-    "onPlay",
-    "onPlaying",
-    "onProgress",
-    "onRateChange",
-    "onSeeked",
-    "onSeeking",
-    "onStalled",
-    "onSuspend",
-    "onTimeUpdate",
-    "onVolumeChange",
-    "onWaiting")
-
-
-  val htmlVoidTags = Set("area",
+  val voidTags = Set("area",
     "base",
     "br",
     "col",
@@ -266,6 +183,8 @@ object RawData {
     "menuitem",
     "wbr")
 
-  val scalaPredefineds = Set("type", "var", "object")
+ val isHtml = true
+
+  val isSvg = false
 
 }
